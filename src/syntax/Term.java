@@ -1,7 +1,7 @@
 package syntax;
 
 // Term describes things that can be evaluated.
-interface Term {
+public interface Term {
   // Returns true if the term is a value (either zero, or successors of zero).
   boolean isNumericVal();
 
@@ -12,4 +12,3 @@ interface Term {
   // the next step of evaluation for that term. When applied to a value an exception is thrown.
   Term evaluateSingleStep();
 }
-

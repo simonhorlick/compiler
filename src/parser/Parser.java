@@ -1,76 +1,35 @@
 package parser;
 
-import common.Either;
+import common.Pair;
 import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-public class Parser {
+// Parser is the interface for all Parsers. A parser consumes an input string and, if successful,
+// returns the parsed result `A`. If the parser is unsuccessful it throws.
+public interface Parser<A> {
 
-  static class ParseState<T> {
-    private final String remaining;
-    private final T state;
+  // parse consumes from the start of the input string and returns a result.
+  A parse(String in);
 
-    ParseState(String remaining, T state) {
-      this.remaining = remaining;
-      this.state = state;
-    }
-
-    public String getRemaining() {
-      return remaining;
-    }
-
-    public T getState() {
-      return state;
-    }
+  // then orders parsers.
+  default <U> Parser<Pair<A, U>> then(Parser<U> that) {
+    return in -> new Pair<>(parse(in), that.parse(in));
   }
 
-  // parseString returns a parser that consumes the string str, or returns a parse error.
-  public static <ParserResult>
-      Function<String, Either<ParseState<ParserResult>, ParseError>> parseString(String str) {
-    return (String input) -> {
-      if (input.startsWith(str)) {
-        return Either.left(new ParseState(input.substring(str.length()), null));
-      } else {
-        return Either.right(new ParseError("expected '" + str + "'; got " + input));
+  // or allows a fallback parser to be used in the case that this parser is unable to parse the
+  // input.
+  default Parser<A> or(Parser<A> that) {
+    return in -> {
+      try {
+        return parse(in);
+      } catch (Exception e) {
+        return that.parse(in);
       }
     };
   }
 
-  // parseRegex returns a parser that consumes the regex if it matches, or returns a parse error.
-  public static <ParserResult>
-      Function<String, Either<ParseState<ParserResult>, ParseError>> parseRegex(String regex) {
-    Pattern p = Pattern.compile("^" + regex);
-    return (String input) -> {
-      Matcher m = p.matcher(input);
-      if (m.matches()) {
-        return Either.left(new ParseState(input.substring(m.end()), null));
-      } else {
-        return Either.right(new ParseError("expected match for '" + regex + "'; got " + input));
-      }
-    };
-  }
-
-  public static <ParserResult>
-      Function<String, Either<ParseState<ParserResult>, ParseError>> parseExpression() {
-    return (String input) -> {
-      Function<String, Either<ParseState<ParserResult>, ParseError>> lambda = parseString("λ");
-      Function<String, Either<ParseState<ParserResult>, ParseError>> binder =
-          parseRegex("[a-zA-Z]+");
-      Function<String, Either<ParseState<ParserResult>, ParseError>> dot = parseString(".");
-
-      // FIXME: Use Either monad here.
-      Either<ParseState<ParserResult>, ParseError> r1 = lambda.apply(input);
-      if (r1.isLeft()) {
-        Either<ParseState<ParserResult>, ParseError> r2 = binder.apply(r1.left().remaining);
-        if (r2.isLeft()) {
-          return dot.apply(r2.left().remaining);
-        } else {
-          return r2;
-        }
-      } else {
-        return r1;
-      }
-    };
+  // map returns a parser that parses the input and then applies the given function to the parsed
+  // result.
+  default <U> Parser<U> map(Function<A, U> f) {
+    return in -> f.apply(parse(in));
   }
 }

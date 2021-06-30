@@ -1,35 +1,35 @@
 package parser;
 
 import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertTrue;
+import static junit.framework.TestCase.fail;
+import static parser.Common.choice;
+import static parser.Common.string;
 
-import common.Either;
-import java.util.function.Function;
 import org.junit.Test;
-import parser.Parser.ParseState;
 
 public class ParserTest {
-  // Create a parser that expects the exact string "token".
-  Function<String, Either<ParseState<Void>, ParseError>> parseStringToken =
-      Parser.parseString("token");
-
   @Test
-  public void shouldReturnAParseErrorWhenNoInputIsGiven() {
-    Either<ParseState<Void>, ParseError> result = parseStringToken.apply("");
-    assertTrue(result.isRight());
+  public void shouldParseString() {
+    Parser<String> fooParser = string("foo");
+    assertEquals("foo", fooParser.parse("foo"));
+    try {
+      fooParser.parse("bar");
+      fail("expected exception");
+    } catch (Exception ex) {
+      // ignored
+    }
   }
 
   @Test
-  public void shouldParseAStringThatMatchesTheWholeInput() {
-    Either<ParseState<Void>, ParseError> result = parseStringToken.apply("token");
-    assertTrue(result.isLeft());
-    assertEquals("", result.left().getRemaining());
-  }
-
-  @Test
-  public void shouldParseAStringThatMatchesAPrefixOfTheInput() {
-    Either<ParseState<Void>, ParseError> result = parseStringToken.apply("tokens");
-    assertTrue(result.isLeft());
-    assertEquals("s", result.left().getRemaining());
+  public void shouldParseOr() {
+    Parser<String> fooOrBarParser = choice(string("foo"), string("bar"));
+    assertEquals("foo", fooOrBarParser.parse("foo"));
+    assertEquals("bar", fooOrBarParser.parse("bar"));
+    try {
+      fooOrBarParser.parse("quux");
+      fail("expected exception");
+    } catch (Exception ex) {
+      // ignored
+    }
   }
 }
