@@ -11,10 +11,10 @@ public class RegexParser implements Parser<MatchResult> {
     this.pattern = pattern;
   }
 
-  public MatchResult parse(String in) {
+  public ParseResult<MatchResult> parse(String in) {
     Matcher matcher = pattern.matcher(in);
     if (matcher.lookingAt()) {
-      return matcher.toMatchResult();
+      return new ParseResult<>(matcher.toMatchResult(), in.substring(matcher.end()));
     } else {
       throw new RuntimeException("got '" + in + "'; expected '" + pattern.pattern() + "'");
     }
