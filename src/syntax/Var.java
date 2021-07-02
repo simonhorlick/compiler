@@ -1,7 +1,12 @@
 package syntax;
 
+import java.util.Objects;
+
 // Var is a variable.
-class Var implements Term {
+public class Var implements Term {
+
+  // The variable name for pretty printing.
+  private final String name;
 
   // The de Bruijn index of this node. The number index stands for “the variable bound by the
   // index’th enclosing λ.”
@@ -10,7 +15,8 @@ class Var implements Term {
   // The length of the current context, as a consistency check.
   private final int contextLength;
 
-  public Var(int index, int contextLength) {
+  public Var(String name, int index, int contextLength) {
+    this.name = name;
     this.index = index;
     this.contextLength = contextLength;
   }
@@ -32,7 +38,11 @@ class Var implements Term {
 
   @Override
   public String toString() {
-    return Integer.toString(index);
+    return "Var(" + name + "," + index + ")";
+  }
+
+  public String name() {
+    return name;
   }
 
   public int getIndex() {
@@ -45,6 +55,18 @@ class Var implements Term {
 
   @Override
   public boolean equals(Object o) {
-    return toString().equals(o.toString());
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Var var = (Var) o;
+    return index == var.index && name.equals(var.name);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(name, index);
   }
 }

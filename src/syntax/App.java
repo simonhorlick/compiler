@@ -1,7 +1,9 @@
 package syntax;
 
+import java.util.Objects;
+
 // App is an application of two terms.
-class App implements Term {
+public class App implements Term {
 
   private final Term left;
   private final Term right;
@@ -36,9 +38,9 @@ class App implements Term {
       int n = ((Var) t).getContextLength();
       int x = ((Var) t).getIndex();
       if (x >= c) {
-        return new Var(x + d, n + d);
+        return new Var(((Var) t).name(), x + d, n + d);
       } else {
-        return new Var(x, n + d);
+        return new Var(((Var) t).name(), x, n + d);
       }
     } else if (t instanceof Abs) {
       String x = ((Abs) t).getName();
@@ -65,7 +67,7 @@ class App implements Term {
       if (x == j + c) {
         return termShift(c, s);
       } else {
-        return new Var(x, n);
+        return new Var(((Var) t).name(), x, n);
       }
     } else if (t instanceof Abs) {
       String x = ((Abs) t).getName();
@@ -112,11 +114,23 @@ class App implements Term {
 
   @Override
   public String toString() {
-    return left + " " + right;
+    return "App(" + left + "," + right + ")";
   }
 
   @Override
   public boolean equals(Object o) {
-    return toString().equals(o.toString());
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    App app = (App) o;
+    return left.equals(app.left) && right.equals(app.right);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(left, right);
   }
 }

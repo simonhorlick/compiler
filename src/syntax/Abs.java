@@ -1,5 +1,7 @@
 package syntax;
 
+import java.util.Objects;
+
 // Abs is a lambda abstraction.
 public class Abs implements Term {
 
@@ -39,11 +41,23 @@ public class Abs implements Term {
 
   @Override
   public String toString() {
-    return "λ" + name + ". " + body;
+    return "Abs(" + name + "," + body + ")";
   }
 
   @Override
   public boolean equals(Object o) {
-    return toString().equals(o.toString());
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Abs abs = (Abs) o;
+    return name.equals(abs.name) && body.equals(abs.body);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(name, body);
   }
 }

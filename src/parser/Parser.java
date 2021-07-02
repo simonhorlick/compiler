@@ -2,6 +2,7 @@ package parser;
 
 import common.Pair;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 // Parser is the interface for all Parsers. A parser consumes an input string and, if successful,
 // returns the parsed result `A`. If the parser is unsuccessful it throws.
@@ -48,6 +49,11 @@ public interface Parser<A> {
         return that.parse(in);
       }
     };
+  }
+
+  // or that also takes a creation function, i.e. or(() -> other).
+  default Parser<A> or(Supplier<Parser<A>> that) {
+    return in -> or(that.get()).parse(in);
   }
 
   // map returns a parser that parses the input and then applies the given function to the parsed
